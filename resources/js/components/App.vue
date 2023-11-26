@@ -93,40 +93,48 @@ DataTable.use(DataTablesLib);
 </script>
 
 <template>
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">Dashboard</h2>
-    <div class="w-full max-w-full">
-        <div class="relative flex flex-col min-w-0 break-words bg-white border-0 shadow-soft-xl rounded-2xl bg-clip-border">
-            <div class="table-responsive">
-                <DataTable
-                    :data="reactiveBookings"
-                    :columns="columns"
-                    ref="table"
-                    :ajax="{
-                      url: 'api/bookings'
-                    }"
-                    :options="{
-                        select: true,
-                        serverSide: true,
-                        drawCallback: deleteTableIsEmpty,
-                        rowCallback: buttonsAction
-                    }"
-                    v-if="reactiveBookings?.length"
-                >
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre cliente</th>
-                        <th>N° documento</th>
-                        <th>Fecha llegada</th>
-                        <th>Fecha salida</th>
-                        <th>Valor</th>
-                        <th>N° noches</th>
-                        <th>N° huespedes</th>
-                        <th>Estado</th>
-                    </tr>
-                    </thead>
-                </DataTable>
+    <div class="container mx-auto">
+        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Administrar Reservas</h1>
+        <section class="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
+            <div class="px-4 mx-auto max-w-screen-2xl lg:px-12">
+                <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+                    <div class="overflow-x-auto">
+                        <DataTable
+                            :data="reactiveBookings"
+                            :columns="columns"
+                            ref="table"
+                            class="w-full text-sm text-left text-gray-500 dark:text-gray-400"
+                            :ajax="{
+                                url: 'api/bookings'
+                            }"
+                            :options="{
+                                select: true,
+                                serverSide: true,
+                                drawCallback: deleteTableIsEmpty,
+                                rowCallback: buttonsAction,
+                                language: {
+                                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-CO.json'
+                                }
+                            }"
+                            v-if="reactiveBookings?.length"
+                        >
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-4 py-3">ID</th>
+                                <th scope="col" class="px-4 py-3">Nombre cliente</th>
+                                <th scope="col" class="px-4 py-3">N° documento</th>
+                                <th scope="col" class="px-4 py-3">Fecha llegada</th>
+                                <th scope="col" class="px-4 py-3">Fecha salida</th>
+                                <th scope="col" class="px-4 py-3">Valor</th>
+                                <th scope="col" class="px-4 py-3">N° noches</th>
+                                <th scope="col" class="px-4 py-3">N° huespedes</th>
+                                <th scope="col" class="px-4 py-3">Estado</th>
+                            </tr>
+                            </thead>
+                        </DataTable>
+                    </div>
+                </div>
             </div>
-        </div>
+        </section>
     </div>
 </template>
