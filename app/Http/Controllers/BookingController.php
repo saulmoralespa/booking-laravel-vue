@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use Illuminate\Http\Response;
 use Illuminate\Http\Request;
-use function Laravel\Prompts\select;
 
 class BookingController extends Controller
 {
@@ -15,22 +13,15 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         $bookings = Booking::join('clients', 'bookings.client_id', '=', 'clients.id')
-        ->orderBy('bookings.id', 'desc')
-        ->get();
+            ->orderBy('bookings.id', 'desc')
+            ->select('bookings.*', 'name', 'document_number', 'is_main_guest')
+            ->get();
         return Response()->json([
             'data' => $bookings,
             'draw' => $request->get('draw'),
             'recordsTotal' => count($bookings),
             'recordsFiltered' => count($bookings),
         ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -44,17 +35,21 @@ class BookingController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Booking $booking)
+    public function show(string $id)
     {
-        //
+        $booking = Booking::join('clients', 'bookings.client_id', '=', 'clients.id')
+            ->where('bookings.id', $id)
+            ->orderBy('bookings.id', 'desc')
+            ->select('bookings.*', 'name', 'document_number', 'is_main_guest')
+            ->first();
+
+        return response()->json($booking);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Booking $booking)
+
+    public function edit()
     {
-        //
+
     }
 
     /**
@@ -62,7 +57,28 @@ class BookingController extends Controller
      */
     public function update(Request $request, Booking $booking)
     {
-        //
+        if ($request->get('action') === 'cancel'){
+            $booking->update([
+                'status' => 'Cancelada'
+            ]);
+            $booking->save();
+        }
+
+        if ($request->get('action') === 'provisional'){
+            $booking->update([
+                'status' => 'Provisional'
+            ]);
+            $booking->save();
+        }
+
+        if ($request->get('action') === 'confirm'){
+            $booking->update([
+                'status' => 'Confirmada'
+            ]);
+            $booking->save();
+        }
+
+        return response()->json($booking);
     }
 
     /**
