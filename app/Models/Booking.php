@@ -35,5 +35,12 @@ class Booking extends Model
                 $booking->departure_date = $departure_date;
             }
         });
+
+        static::updating(function (Booking $booking) {
+            if ($booking->arrival_date && $booking->number_nights){
+                $departure_date = Carbon::parse($booking->arrival_date)->addDays($booking->number_nights);
+                $booking->departure_date = $departure_date;
+            }
+        });
     }
 }

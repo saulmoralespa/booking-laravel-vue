@@ -1,14 +1,15 @@
 <script>
-import { ref, toRefs, computed, watchEffect, reactive, onMounted} from 'vue';
-import {createRouter, createWebHashHistory} from 'vue-router';
+
+import { ref, toRefs, onMounted} from 'vue';
+import {buttonsDrodown, clientFetch, modalContent} from "../helpers";
+import router from "../router/index.js";
 import Swal from 'sweetalert2';
-import {clientFetch} from "../helpers/clientFetch.js";
 import DataTable from 'datatables.net-vue3'
 import DataTablesLib from 'datatables.net';
 DataTable.use(DataTablesLib);
 
 export default {
-    name: "App",
+    name: "DataTableBooking",
     components: {DataTable},
     props: {
         bookings: {
@@ -21,46 +22,10 @@ export default {
             loading: false
         };
     },
-    methods: {
-        loadingApp(){
-            this.loading = true
-        }
-    },
-    emits: ["update:bookings"],
-    setup(props, { emit }) {
+    setup(props) {
 
         const { bookings } = toRefs(props);
         const reactiveBookings = ref(bookings.value);
-
-
-        const buttons = (data, type, row) => {
-            const statusBooking = row.status;
-            const textButtonChange = statusBooking === 'Provisional' ? 'Confirmar' : 'Provisional';
-            const dataAttrChange = statusBooking === 'Provisional' ? 'booking-confirm' : 'booking-provisional';
-            const cancelOption = statusBooking === 'Confirmada' || statusBooking === 'Cancelada'  ? '' : `<li>
-                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" booking-cancel="${row.id}" onclick="dropDownAction(this)">Cancelar</a>
-                        </li>`;
-
-         return`<button id="apple-imac-27-dropdown-button" onclick="dropDownOpen(this)" data-dropdown-toggle="apple-imac-27-dropdown" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100" type="button">
-                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                    </svg>
-                </button>
-                <div id="apple-imac-27-dropdown" class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="apple-imac-27-dropdown-button">
-                        <li>
-                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" booking-edit="${row.id}" onclick="dropDownAction(this)">Editar</a>
-                        </li>
-                        ${cancelOption}
-                        <li>
-                            <a href="#" class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white" ${dataAttrChange}="${row.id}" onclick="dropDownAction(this)">${textButtonChange}</a>
-                        </li>
-                    </ul>
-                    <div class="py-1">
-                        <a href="#" class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white" booking-view="${row.id}" onclick="dropDownAction(this)">Ver</a>
-                    </div>
-                </div>`;
-        }
 
         const columns = [
             {"data": "id"},
@@ -74,14 +39,9 @@ export default {
             {"data": "status"},
             {
                 data: 'action',
-                render: buttons,
+                render: buttonsDrodown,
             },
         ];
-
-        const read =()  =>{
-            const componentTable = this.$refs.table.dt;
-            componentTable.ajax.url('api/bookings').load();
-        };
 
         const deleteTableIsEmpty = ({_iRecordsDisplay}) => {
             if (!_iRecordsDisplay){
@@ -89,37 +49,15 @@ export default {
             }
         };
 
-        /*const computedBookings = computed({
-            get: () => reactiveBookings.value,
-            set: (data) => {
-                reactiveBookings.value = data;
-                emit('update:bookings', data);
-            },
-        });
-
-        const computedLoading = computed({
-            get: () => reactiveLoading.value,
-            set: (data) => {
-                reactiveLoading.value = data;
-                emit('update:loading', true);
-            },
-        });
-
-        watchEffect(() => {
-            reactiveLoading.value = true;
-        })*/;
-
         onMounted(async () => {
-            const res = await fetch('api/bookings')
-                .then(data => data.json());
-            const { data } = res;
+            const res = await clientFetch('GET');
+            let { data } = res.data;
+            if (!data.length) await router.push({name: 'HotelRegister'});
+
             reactiveBookings.value = data;
         });
 
-        return {columns, reactiveBookings, read, deleteTableIsEmpty };
-    },
-    mounted() {
-        this.loadingApp()
+        return {columns, reactiveBookings, deleteTableIsEmpty };
     }
 }
 
@@ -148,9 +86,7 @@ window.dropDownAction = el => {
         action: "cancel"
     }
 
-    if (el.getAttribute('booking-edit')){
-        idBooking = el.getAttribute('booking-edit');
-    }else if (el.getAttribute('booking-provisional')){
+    if (el.getAttribute('booking-provisional')){
         idBooking = el.getAttribute('booking-provisional');
         payload = {
             action: "provisional"
@@ -169,7 +105,7 @@ window.dropDownAction = el => {
                     title: "Actualizando reserva a provisional",
                     didOpen: () => Swal.showLoading()
                 });
-                clientFetch('PUT', idBooking, payload)
+                clientFetch('PUT', payload, `bookings/${idBooking}`)
                     .then(() => {
                         Swal.fire({
                             title: "Reserva actualizada",
@@ -199,7 +135,7 @@ window.dropDownAction = el => {
                     title: "Confirmando reserva",
                     didOpen: () => Swal.showLoading()
                 });
-                clientFetch('PUT', idBooking, payload)
+                clientFetch('PUT', payload, `bookings/${idBooking}`)
                     .then(() => {
                         Swal.fire({
                             title: "Reserva canfirmada",
@@ -218,23 +154,10 @@ window.dropDownAction = el => {
             didOpen: () => Swal.showLoading(),
             allowOutsideClick: false
         });
-        clientFetch('GET', idBooking).then(data => {
-            const { arrival_date,  departure_date, number_nights, number_people, status, total_amount, name, document_number} = data;
+        clientFetch('GET', null, `bookings/${idBooking}`).then(data => {
             Swal.fire({
                 title: `Reservación #${idBooking}`,
-                html: `
-                    <div>
-                    <p><strong>Datos del huésped principal:</strong></p>
-                    <p>Nombre: ${name}</p>
-                    <p>N° documento: ${document_number}</p>
-                    </div>
-                    <p>Llegada: ${arrival_date}</p>
-                    <p>Salida: ${departure_date}</p>
-                    <p>Cantidad de noches: ${number_nights}</p>
-                    <p>Número de huéspedes: ${number_people}</p>
-                    <p>Estado de reservación: ${status}</p>
-                    <p>Total reservación <strong>$${total_amount}</strong></p>
-                  `,
+                html: modalContent(data.data),
                 confirmButtonText: `Cerrar reservación`,
             });
         })
@@ -254,7 +177,7 @@ window.dropDownAction = el => {
                     title: "Cancelando reserva",
                     didOpen: () => Swal.showLoading()
                 });
-                clientFetch('PUT', idBooking, payload)
+                clientFetch('PUT', payload, `bookings/${idBooking}`)
                     .then(() => {
                     Swal.fire({
                         title: "Reserva cancelada",
@@ -271,8 +194,13 @@ window.dropDownAction = el => {
 </script>
 
 <template>
-    <div class="container mx-auto">
-        <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Administrar Reservas</h1>
+    <div class="container mx-auto" v-if="reactiveBookings?.length">
+        <div class='flex justify-between'>
+            <h1 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">Administrar Reservas</h1>
+            <router-link class="text-blue-500 hover:text-blue-800" to="/new-booking">
+                Crear Nueva Reservación
+            </router-link>
+        </div>
         <section class="bg-gray-50 dark:bg-gray-900 py-3 sm:py-5">
             <div class="px-4 mx-auto max-w-screen-2xl lg:px-12">
                 <div class="relative overflow-hidden bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
@@ -295,7 +223,6 @@ window.dropDownAction = el => {
                                     url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-CO.json'
                                 }
                             }"
-                            v-if="reactiveBookings?.length"
                         >
                             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                             <tr>
