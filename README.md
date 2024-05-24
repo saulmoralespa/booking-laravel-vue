@@ -1,8 +1,38 @@
-## Pasos de instalación
+# Pasos de instalación
 
-- Clonar el respositorio.
-- Instalar dependencias de composer
-- Instalar dependencias de NPM
-- Agregar variable de entorno VITE_BACKEND_URL=http://localhost:8000 Debe ser el mismo valor de APP_URL
-- Compilar los assets con: `npm run build`
-- Realizar conexión con base de datos y correr la migraciones
+## Clonar el respositorio 
+
+
+```bash
+git clone https://github.com/saulmoralespa/booking-laravel-vue.git
+cd booking-laravel-vue
+```
+
+## Instalar dependencias
+
+```bash
+composer install
+npm install
+```
+
+## Configurar arhivo .env
+
+```bash
+cp .env.example .env
+```
+
+Agregar variable de entorno VITE_BACKEND_URL=http://localhost Debe ser el mismo valor de APP_URL
+
+## Compilar assets
+
+```bash
+npm run build
+```
+
+## Construir e iniciar containers de Docker
+
+```bash
+docker compose up -d --build
+```
+
+
