@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Client;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
@@ -29,13 +29,13 @@ class BookingController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
             'name' => 'required|string',
             'document_number' => [
                 'required',
-                'string'
+                'string',
             ],
             'arrival_date' => 'required|date',
             'number_people' => 'required|integer',
@@ -81,7 +81,6 @@ class BookingController extends Controller
         return response()->json($booking);
     }
 
-
     public function edit()
     {
 
@@ -92,28 +91,28 @@ class BookingController extends Controller
      */
     public function update(Booking $booking, Request $request): JsonResponse
     {
-        if ($request->get('action') === 'cancel'){
+        if ($request->get('action') === 'cancel') {
             $booking->update([
-                'status' => 'Cancelada'
+                'status' => 'Cancelada',
             ]);
             $booking->save();
         }
 
-        if ($request->get('action') === 'provisional'){
+        if ($request->get('action') === 'provisional') {
             $booking->update([
-                'status' => 'Provisional'
+                'status' => 'Provisional',
             ]);
             $booking->save();
         }
 
-        if ($request->get('action') === 'confirm'){
+        if ($request->get('action') === 'confirm') {
             $booking->update([
-                'status' => 'Confirmada'
+                'status' => 'Confirmada',
             ]);
             $booking->save();
         }
 
-        if (count($request->all()) > 1){
+        if (count($request->all()) > 1) {
 
             $booking->update(
                 $request->all()
@@ -123,10 +122,10 @@ class BookingController extends Controller
 
             $client = $booking->client;
 
-            if ($client){
+            if ($client) {
                 $client->update([
                     'name' => $request->get('name'),
-                    'document_number' => $request->get('document_number')
+                    'document_number' => $request->get('document_number'),
                 ]);
                 $client->save();
             }
