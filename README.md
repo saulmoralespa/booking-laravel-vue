@@ -35,4 +35,13 @@ npm run build
 docker compose up -d --build
 ```
 
+## Correr las migraciones
+```bash
+php artisan migrate:install
+php artisan migrate
+```
 
+### Correr datos semillas
+```bash
+php artisan db:seed
+```
